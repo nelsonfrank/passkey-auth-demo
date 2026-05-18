@@ -2,18 +2,18 @@
 # `docker compose up`. For production, use:
 #   docker compose -f docker-compose.yml up
 
-services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    command: pnpm run start:dev
-    environment:
-      NODE_ENV: development
-    volumes:
-      # Mount source so hot-reload picks up changes without rebuilding
-      - .:/app
-      # Prevent host node_modules from overwriting the container's
-      - /app/node_modules
-    ports:
-      - '${PORT:-3000}:${PORT:-3000}'
+# services:
+#   api:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.dev
+#     command: pnpm run start:dev
+#     environment:
+#       NODE_ENV: development
+#     volumes:
+#       # Mount source so hot-reload picks up changes without rebuilding
+#       - .:/app
+#       # Prevent host node_modules from overwriting the container's
+#       - /app/node_modules
+#     ports:
+#       - '${PORT:-3000}:${PORT:-3000}'

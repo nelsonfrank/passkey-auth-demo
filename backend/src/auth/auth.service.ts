@@ -15,6 +15,7 @@ import { isoUint8Array, isoBase64URL } from '@simplewebauthn/server/helpers';
 import { User } from '../users/entities/user.entity';
 import { PasskeyCredential } from '../users/entities/passkey-credential.entity';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     @InjectRepository(PasskeyCredential)
     private credentialRepository: Repository<PasskeyCredential>,
     private configService: ConfigService,
+    private jwtService: JwtService,
   ) {
     this.rpID = this.configService.get<string>('RP_ID', 'localhost');
     this.origin = this.configService.get<string>(
@@ -55,7 +57,7 @@ export class AuthService {
       userDisplayName: user.email,
       attestationType: 'none',
       // v13: 'type' field removed; id must be a Base64URLString
-      excludeCredentials: user.credentials.map((cred) => ({
+      excludeCredentials: (user.credentials || []).map((cred) => ({
         id: cred.credentialID,
       })),
       authenticatorSelection: {
@@ -106,7 +108,10 @@ export class AuthService {
       user.currentChallenge = null;
       await this.userRepository.save(user);
 
-      return { verified: true };
+      const payload = { sub: user.id, email: user.email };
+      const access_token = this.jwtService.sign(payload);
+
+      return { verified: true, access_token };
     }
 
     throw new BadRequestException('Registration verification failed');
@@ -176,7 +181,10 @@ export class AuthService {
       user.currentChallenge = null;
       await this.userRepository.save(user);
 
-      return { verified: true };
+      const payload = { sub: user.id, email: user.email };
+      const access_token = this.jwtService.sign(payload);
+
+      return { verified: true, access_token };
     }
 
     throw new BadRequestException('Authentication verification failed');

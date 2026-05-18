@@ -6,7 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "pnpm": {
-    "onlyBuiltDependencies": ["@nestjs/core", "unrs-resolver"]
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "unrs-resolver"
+    ]
   },
   "scripts": {
     "build": "nest build",
@@ -26,6 +29,7 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^1.1.0",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
     "@simplewebauthn/server": "^13.3.0",

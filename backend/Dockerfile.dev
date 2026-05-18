@@ -10,8 +10,9 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package manifests and install all deps (no --prod flag)
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm approve-builds
+RUN pnpm install --frozen-lockfile
 
 # Source is bind-mounted at runtime (see docker-compose.override.yml),
 # so we don't COPY it here — this just pre-warms the layer.

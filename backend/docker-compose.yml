@@ -13,24 +13,24 @@ services:
     networks:
       - app-network
 
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: passkey-auth-backend
-    ports:
-      - '${PORT}:${PORT}'
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      NODE_ENV: ${NODE_ENV}
-    depends_on:
-      - postgres
-    networks:
-      - app-network
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: passkey-auth-backend
+  #   ports:
+  #     - '${PORT}:${PORT}'
+  #   environment:
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_USERNAME: ${DB_USERNAME}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_NAME: ${DB_NAME}
+  #     NODE_ENV: ${NODE_ENV}
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app-network
 
 volumes:
   postgres_data:
