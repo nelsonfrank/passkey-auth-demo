@@ -2,8 +2,9 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { getToken, removeToken } from '../utils/auth'
 
 export const Route = createFileRoute('/dashboard')({
-  beforeLoad: () => {
-    // Basic client-side check. In a full SSR app, you'd use a server function to read cookies
+  beforeLoad: async () => {
+    // Tightly secure page access: Not only check cookie presence, but actively validate it 
+    // against the backend before loading the route component.
     if (typeof window !== 'undefined') {
       const token = getToken()
       if (!token) {
@@ -11,6 +12,23 @@ export const Route = createFileRoute('/dashboard')({
           to: '/auth',
         })
       }
+
+      try {
+        const res = await fetch('http://localhost:5000/auth/validate', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!res.ok) {
+          removeToken()
+          throw redirect({ to: '/auth' })
+        }
+      } catch (e: any) {
+        if (e.message?.includes('redirect')) throw e
+        removeToken()
+        throw redirect({ to: '/auth' })
+      }
+    } else {
+        // We aren't able to easily securely check client cookies natively inside TanStack simple SSR
+        // but we can delay hydration or pass to browser tightly
     }
   },
   component: DashboardPage,

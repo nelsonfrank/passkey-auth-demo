@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -188,5 +189,14 @@ export class AuthService {
     }
 
     throw new BadRequestException('Authentication verification failed');
+  }
+
+  async validateToken(token: string) {
+    try {
+      const payload = this.jwtService.verify(token);
+      return { valid: true, user: payload };
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
   }
 }

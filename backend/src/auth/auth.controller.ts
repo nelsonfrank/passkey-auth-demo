@@ -1,4 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -23,5 +30,12 @@ export class AuthController {
   @Post('login-verify')
   async verifyAuthentication(@Body('email') email: string, @Body() body: any) {
     return this.authService.verifyAuthentication(email, body);
+  }
+
+  @Get('validate')
+  async validateToken(@Headers('authorization') authHeader: string) {
+    if (!authHeader) throw new UnauthorizedException('No token provided');
+    const token = authHeader.split(' ')[1];
+    return this.authService.validateToken(token);
   }
 }
