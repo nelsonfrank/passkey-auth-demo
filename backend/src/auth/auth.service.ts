@@ -12,11 +12,22 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/server';
 import { isoUint8Array, isoBase64URL } from '@simplewebauthn/server/helpers';
 import { User } from '../users/entities/user.entity';
 import { PasskeyCredential } from '../users/entities/passkey-credential.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+}
 
 @Injectable()
 export class AuthService {
@@ -74,7 +85,7 @@ export class AuthService {
     return options;
   }
 
-  async verifyRegistration(email: string, body: any) {
+  async verifyRegistration(email: string, body: RegistrationResponseJSON) {
     const user = await this.userRepository.findOne({
       where: { email },
     });
@@ -133,7 +144,9 @@ export class AuthService {
       // v13: 'type' field removed; id must be a Base64URLString
       allowCredentials: user.credentials.map((cred) => ({
         id: cred.credentialID,
-        transports: JSON.parse(cred.transports || '[]'),
+        transports: JSON.parse(
+          cred.transports || '[]',
+        ) as AuthenticatorTransport[],
       })),
       userVerification: 'preferred',
     });
@@ -144,9 +157,23 @@ export class AuthService {
     return options;
   }
 
-  async verifyAuthentication(email: string, body: any) {
+  async verifyAuthentication(body: AuthenticationResponseJSON) {
+    // Derive user identity from the authenticator's userHandle instead of
+    // trusting the client-supplied email. The userHandle is cryptographically
+    // bound to the credential set during registration, preventing a user from
+    // authenticating as a different account by sending a forged email.
+    const userHandle: string | undefined = body.response?.userHandle;
+    if (!userHandle) {
+      throw new BadRequestException(
+        'Missing userHandle in authentication response. Discoverable credentials are required.',
+      );
+    }
+
+    // Decode userHandle → user ID (set during registration via isoUint8Array.fromUTF8String)
+    const userId = new TextDecoder().decode(isoBase64URL.toBuffer(userHandle));
+
     const user = await this.userRepository.findOne({
-      where: { email },
+      where: { id: userId },
       relations: ['credentials'],
     });
 
@@ -172,7 +199,9 @@ export class AuthService {
         id: dbCredential.credentialID,
         publicKey: isoBase64URL.toBuffer(dbCredential.publicKey),
         counter: dbCredential.counter,
-        transports: JSON.parse(dbCredential.transports || '[]'),
+        transports: JSON.parse(
+          dbCredential.transports || '[]',
+        ) as AuthenticatorTransport[],
       },
     });
 
@@ -191,9 +220,9 @@ export class AuthService {
     throw new BadRequestException('Authentication verification failed');
   }
 
-  async validateToken(token: string) {
+  validateToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify<JwtPayload>(token);
       return { valid: true, user: payload };
     } catch {
       throw new UnauthorizedException('Invalid token');

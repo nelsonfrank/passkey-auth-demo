@@ -57,7 +57,7 @@ export const loginWithPasskey = async (email: string) => {
   const verifyRes = await fetch(`${API_BASE}/login-verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, ...asseResp }),
+    body: JSON.stringify(asseResp),
   });
   if (!verifyRes.ok) throw new Error("Failed to verify authentication");
   const result = await verifyRes.json();
