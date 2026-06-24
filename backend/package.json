@@ -23,7 +23,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:reset": "export $(grep -v '^#' .env | grep -v '^$' | xargs) && PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USERNAME -d $DB_NAME -c 'DROP TABLE IF EXISTS passkey_credentials, users CASCADE;' && echo 'Database tables dropped. Restart the server to recreate them.'"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

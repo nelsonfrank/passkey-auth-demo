@@ -158,35 +158,23 @@ export class AuthService {
   }
 
   async verifyAuthentication(body: AuthenticationResponseJSON) {
-    // Derive user identity from the authenticator's userHandle instead of
-    // trusting the client-supplied email. The userHandle is cryptographically
-    // bound to the credential set during registration, preventing a user from
-    // authenticating as a different account by sending a forged email.
-    const userHandle: string | undefined = body.response?.userHandle;
-    if (!userHandle) {
-      throw new BadRequestException(
-        'Missing userHandle in authentication response. Discoverable credentials are required.',
-      );
-    }
-
-    // Decode userHandle → user ID (set during registration via isoUint8Array.fromUTF8String)
-    const userId = new TextDecoder().decode(isoBase64URL.toBuffer(userHandle));
-
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['credentials'],
+    // Look up the credential directly by its ID to find the associated user.
+    // This is secure because we don't trust any client-supplied email, and
+    // it's more robust than relying on userHandle which authenticators may
+    // omit when allowCredentials is provided.
+    const dbCredential = await this.credentialRepository.findOne({
+      where: { credentialID: body.id },
+      relations: ['user'],
     });
-
-    if (!user || !user.currentChallenge) {
-      throw new BadRequestException('Challenge not found');
-    }
-
-    const dbCredential = user.credentials.find(
-      (cred) => cred.credentialID === body.id,
-    );
 
     if (!dbCredential) {
       throw new BadRequestException('Credential not found');
+    }
+
+    const user = dbCredential.user;
+
+    if (!user || !user.currentChallenge) {
+      throw new BadRequestException('Challenge not found');
     }
 
     const verification = await verifyAuthenticationResponse({

@@ -22,7 +22,7 @@ export const registerAndStorePasskey = async (email: string) => {
   const options = await optionsRes.json();
 
   // 2. Start browser WebAuthn
-  const attResp = await startRegistration(options);
+  const attResp = await startRegistration({ optionsJSON: options });
 
   // 3. Verify
   const verifyRes = await fetch(`${API_BASE}/register-verify`, {
@@ -51,7 +51,7 @@ export const loginWithPasskey = async (email: string) => {
   const options = await optionsRes.json();
 
   // 2. Start browser WebAuthn
-  const asseResp = await startAuthentication(options);
+  const asseResp = await startAuthentication({ optionsJSON: options });
 
   // 3. Verify
   const verifyRes = await fetch(`${API_BASE}/login-verify`, {
@@ -59,6 +59,7 @@ export const loginWithPasskey = async (email: string) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(asseResp),
   });
+
   if (!verifyRes.ok) throw new Error("Failed to verify authentication");
   const result = await verifyRes.json();
 
