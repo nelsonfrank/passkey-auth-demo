@@ -40,12 +40,12 @@ export const registerAndStorePasskey = async (email: string) => {
   return false;
 };
 
-export const loginWithPasskey = async (email: string) => {
+export const loginWithPasskey = async (email?: string) => {
   // 1. Get options
   const optionsRes = await fetch(`${API_BASE}/login-options`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify(email ? { email } : {}),
   });
   if (!optionsRes.ok) throw new Error("Failed to get login options");
   const options = await optionsRes.json();

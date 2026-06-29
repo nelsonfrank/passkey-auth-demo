@@ -7,6 +7,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/server';
 
 @Controller('auth')
 export class AuthController {
@@ -18,17 +22,20 @@ export class AuthController {
   }
 
   @Post('register-verify')
-  async verifyRegistration(@Body('email') email: string, @Body() body: any) {
+  async verifyRegistration(
+    @Body('email') email: string,
+    @Body() body: RegistrationResponseJSON,
+  ) {
     return this.authService.verifyRegistration(email, body);
   }
 
   @Post('login-options')
-  async getAuthenticationOptions(@Body('email') email: string) {
+  async getAuthenticationOptions(@Body('email') email?: string) {
     return this.authService.getAuthenticationOptions(email);
   }
 
   @Post('login-verify')
-  async verifyAuthentication(@Body() body: any) {
+  async verifyAuthentication(@Body() body: AuthenticationResponseJSON) {
     return this.authService.verifyAuthentication(body);
   }
 

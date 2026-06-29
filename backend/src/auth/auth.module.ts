@@ -6,13 +6,14 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User } from '../users/entities/user.entity';
 import { PasskeyCredential } from '../users/entities/passkey-credential.entity';
+import { Challenge } from '../users/entities/challenge.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, PasskeyCredential]),
+    TypeOrmModule.forFeature([User, PasskeyCredential, Challenge]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>(
           'JWT_SECRET',
           'super_secret_key_change_me_in_prod',

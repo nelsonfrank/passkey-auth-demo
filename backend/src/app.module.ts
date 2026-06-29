@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/entities/user.entity';
 import { PasskeyCredential } from './users/entities/passkey-credential.entity';
+import { Challenge } from './users/entities/challenge.entity';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -21,7 +22,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User, PasskeyCredential],
+        entities: [User, PasskeyCredential, Challenge],
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
       }),
       inject: [ConfigService],

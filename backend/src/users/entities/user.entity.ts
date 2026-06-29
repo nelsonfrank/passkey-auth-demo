@@ -31,9 +31,9 @@ export class User {
   @OneToMany(() => PasskeyCredential, (credential) => credential.user)
   credentials: PasskeyCredential[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 }
